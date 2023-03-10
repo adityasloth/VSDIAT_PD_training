@@ -4,7 +4,7 @@ VLSI Physical Design Training using OPENLANE. What I leared during this 5-day co
 # Day1: Open source EDA, openLANE and sky130A PDK
 
 ## D1_SK1:
-1. Learnt about the different tools available under OPENLANE and the role each of them plays in the design process starting from RTL all the way upto GDS II. 
+1. Learnt about the different tools available under OPENLANE and the role each of them plays in the design process starting from RTL all the way upto GDS II.\n
 From the below image, we can recount the different tools and their roles in detail below:
 ![image](https://user-images.githubusercontent.com/125293220/218512333-b4b4044a-9258-4f9d-80a0-0745b5a30230.png)
 
