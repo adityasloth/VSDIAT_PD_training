@@ -254,17 +254,17 @@ Process to run cts is simple. Just run below command in openlane shell:
 ### Post CTS STA analysis
 
 Following steps need to be run in openlane to check STA after CTS step. These involve invoking openROAD internally within the openLANE gui.
-> openroad
-> read_lef /openLANE_flow/designs/picorv32a/runs/16-03_10-19/tmp/merged.lef
-> read_def /openLANE_flow/designs/picorv32a/runs/16-03_10-19/results/cts/picorv32a.cts.def
-> write_db pico_cts.db
-> read_db pico_cts.db
-> read_verilog /openLANE_flow/designs/picorv32a/runs/16-03_10-19/results/synthesis/picorv32a.synthesis_cts.v
-> read_liberty -max $::env(LIB_SLOWEST)
-> read_liberty -min $::env(LIB_FASTEST)
-> read_sdc /openLANE_flow/designs/picorv32a/src/my_base.sdc
-> set_propagated_clock [all_clocks]
-> report_checks -path_delay min_max -format full_clock_expanded -digits 4
+> openroad  
+> read_lef /openLANE_flow/designs/picorv32a/runs/16-03_10-19/tmp/merged.lef  
+> read_def /openLANE_flow/designs/picorv32a/runs/16-03_10-19/results/cts/picorv32a.cts.def  
+> write_db pico_cts.db  
+> read_db pico_cts.db  
+> read_verilog /openLANE_flow/designs/picorv32a/runs/16-03_10-19/results/synthesis/picorv32a.synthesis_cts.v  
+> read_liberty -max $::env(LIB_SLOWEST)  
+> read_liberty -min $::env(LIB_FASTEST)  
+> read_sdc /openLANE_flow/designs/picorv32a/src/my_base.sdc  
+> set_propagated_clock [all_clocks]  
+> report_checks -path_delay min_max -format full_clock_expanded -digits 4  
 
 ### Power Delivery Network Generation
 
