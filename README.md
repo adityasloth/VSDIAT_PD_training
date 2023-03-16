@@ -266,9 +266,39 @@ Following steps need to be run in openlane to check STA after CTS step. These in
 > set_propagated_clock [all_clocks]  
 > report_checks -path_delay min_max -format full_clock_expanded -digits 4  
 
+- Max path (setup):
+![image](https://user-images.githubusercontent.com/125293220/225709889-f157d810-30c0-421d-a4e6-35a3b6b0b425.png)
+
+- Min path (hold):
+![image](https://user-images.githubusercontent.com/125293220/225710054-76234b6e-c556-4c52-8bdc-6b2c782ee8b8.png)
+
+As we can see, some more iterations of fixes (upsizing/fanout changes) can be done to make the slack positive and meet the requirements.
+
+## Routing using OpenROAD and TritonRoute
+
 ### Power Delivery Network Generation
 
-Now that we are done we CTS, we start the routing stage by generating out power delivery network as per the pitch and width values from the track.info file.  
+Now that we are done with CTS, we start the routing stage by generating out power delivery network as per the pitch and width values from the track.info file.  
 To run it simply run below command in openlane shell:
 > gen_pdf
 
+This stage creates a new def with the power distribution network created:
+![image](https://user-images.githubusercontent.com/125293220/225710834-53405e2d-23b2-4c4a-82e0-42a2eae4c465.png)
+
+While we are viewing this layout, we can also note that our custom inv cell is also included in the design!
+![image](https://user-images.githubusercontent.com/125293220/225710978-fbe5d488-1bb0-4079-adb4-576492969e10.png)
+
+### Routing
+
+- Routing step consists of two parts:
+  - Global Routing: We find a guide for all routes. There are multiple possible conditions that make up these guides. These guides are created after splitting the entire region into small grid boxes.
+  - Detailed routing: Keeping in mind, the guidelines made after global routing, we finally place the geometries to route using the most optimized paths as per DRC. This is done while making sure that none of the guidelines from global routing are breached.
+
+How to run it in openLane shell:
+> run_routing
+
+- During routing, we go through multiple optimization iterations to reduce the number of violations as much as possible
+![image](https://user-images.githubusercontent.com/125293220/225712410-762b40a4-0e7a-4040-baa8-27ebd1eb889f.png)
+
+- Finally we are left with some violations that would have to be fixed manually:
+![image](https://user-images.githubusercontent.com/125293220/225712672-3e910c56-828c-4b71-8f25-c60b46d67e2e.png)
