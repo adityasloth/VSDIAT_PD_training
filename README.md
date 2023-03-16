@@ -58,7 +58,7 @@ in the openlane shell
 - The output for this step ie. the synthesized netlist, would be saved in the following directory  
 > /picorv32a/runs/<tag/results/synthesis/picorv32a.synthesis.v
 
-### Floorplanning:
+# Floorplanning: Good vs Bad floorplanning and intro to library cells
 
 - In this step, we decide the die area and plan the amount of space that would be taken up by the various gates in our synthesized netlist. This requires a general idea of where the gates should be placed to ensure an optimal performance as well as to avoid any violations in the later stages 
 - This step requires understanding of the below concepts:  
@@ -118,11 +118,56 @@ CMOS cells have five modes of operation:
 - NMOS Linear PMOS Cutoff
 Thershold voltage is the voltage at which Vin = Vout. Threshold voltage is a function of the W/L ratio of a device, therefore varying the W/L ratio will vary the output waveform of CMOS devices and inturn the transfer charecteristic of the device as well. A perfectly symmetrical device will have a switching threshold such that Vin = Vout = VDD/2 which is achieved when (W/L)p is approximatly 2.5 times (W/L)n.  
 
+### Cell characterization flow:
+
+GUNA software is used for cell characterization. An example buffer cell is characterized in the following steps:
+- Device model (mos devices and their electrical values)
+- Read the extracted spice netlist(inverters called and used to make buffer)
+- Recognize or define the behavior of the buffer
+- Read subckt of inverter
+- Attach/read in necessary power supplies
+- Apply stimulus at input
+- Provide necessary output load caps
+- Give the required simulation (.tran)
+Finally, we feed all above steps from in GUNA software as config file.
+
+
 ### LAB
 - Clone the repo: https://github.com/nickson-jose/vsdstdcelldesign.git, and use the mag file to see the layout of the inv cell.
 > magic -T sky130A.tech sky130_inv.mag
-- 
+- The layout looks like this:
+![image](https://user-images.githubusercontent.com/125293220/225680284-805c7b73-c256-46bc-a672-ae148e8964c5.png)
 
-## D2_SK3:
+- Now we extract the spice netlist from the mag layout.
+> extract all
+> ext2spice cthresh 0 rthresh 0
+> ext2spice
+
+- The first command creates a .ext file which is then converted to a spice netlist using the below two commands. 
+- We then edit this file to ensure that the proper library is annotated, the sources are applied and the type of simulation is specified:
+![image](https://user-images.githubusercontent.com/125293220/225682705-337aee07-9e3a-4f66-9eff-1cb34bbec422.png)
+
+- Now we can run the simulation using below command:
+> ngspice sky130_vsdinv.spice
+- This opens the ngspice shell as well.
+- We can plot the output/input etc by plotting the voltage at various nodes:
+![image](https://user-images.githubusercontent.com/125293220/225684068-5a5ed4a3-6a6f-48fa-b1cc-a89c0ab70255.png)
+
+- Using these waveforms, we can find out the various parameters such as:
+a) Rise transition time:
+![image](https://user-images.githubusercontent.com/125293220/225684267-8d600380-c9fa-4047-97ce-b916da4e32a0.png)
+
+b) Fall delay:
+![image](https://user-images.githubusercontent.com/125293220/225684352-bdbe8591-af76-452d-b8f1-c596d037c2fc.png)
+
+c) By clicking on the point where we want to measure the values, we can print the values at specific points. These get printed in the ngspice shell:
+![image](https://user-images.githubusercontent.com/125293220/225684698-54d23adc-be5c-4cfc-91ca-0c6e097b53e3.png)
+
+
+
+## Pre-layout timing analysis and CTS
+
+### Magic to std cell lef generation:
+
 
 
