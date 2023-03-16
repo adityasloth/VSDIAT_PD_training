@@ -238,4 +238,37 @@ b) SYNTH_MAX_FANOUT
   - OpenSTA:
 ![image](https://user-images.githubusercontent.com/125293220/225703484-5b208f77-7c73-44da-b36f-2e2db25b2343.png)
 
+We can see slack values are reduced.
+
+- We can also think of upsizing buffers/other std cells to increase their drive strength thereby reducing slew values. This can be done by refering to the slack report generated in openSTA. This would however, increase the design area so it is a trade-off.
+
+### Clock Tree Synthesis
+
+This step ensures that the clocks are routed to all sequential cells such that there is equal distribution of the delay i.e. the clock skew is minimal.
+
+Process to run cts is simple. Just run below command in openlane shell:
+> run_cts
+
+![image](https://user-images.githubusercontent.com/125293220/225707471-4db3a41f-2bba-450e-ab7a-d0e1a16a7d3d.png)
+
+### Post CTS STA analysis
+
+Following steps need to be run in openlane to check STA after CTS step. These involve invoking openROAD internally within the openLANE gui.
+> openroad
+> read_lef /openLANE_flow/designs/picorv32a/runs/16-03_10-19/tmp/merged.lef
+> read_def /openLANE_flow/designs/picorv32a/runs/16-03_10-19/results/cts/picorv32a.cts.def
+> write_db pico_cts.db
+> read_db pico_cts.db
+> read_verilog /openLANE_flow/designs/picorv32a/runs/16-03_10-19/results/synthesis/picorv32a.synthesis_cts.v
+> read_liberty -max $::env(LIB_SLOWEST)
+> read_liberty -min $::env(LIB_FASTEST)
+> read_sdc /openLANE_flow/designs/picorv32a/src/my_base.sdc
+> set_propagated_clock [all_clocks]
+> report_checks -path_delay min_max -format full_clock_expanded -digits 4
+
+### Power Delivery Network Generation
+
+Now that we are done we CTS, we start the routing stage by generating out power delivery network as per the pitch and width values from the track.info file.  
+To run it simply run below command in openlane shell:
+> gen_pdf
 
