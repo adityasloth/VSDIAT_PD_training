@@ -168,6 +168,74 @@ c) By clicking on the point where we want to measure the values, we can print th
 ## Pre-layout timing analysis and CTS
 
 ### Magic to std cell lef generation:
+PnR is possible just by giving information about the pin placement and metal information, there is no need of providing any information about the logic. This is done by the LEF file (Library Exchange Format) to perform interconnect routing in conjunction to routing guides generated from the PnR flow. This is how the companies do not disclose the logic information to the foundry.  
 
+Before generating the LEF file for our standard cell design we need to ensure that the design we have made is satisfing the foundry requirment i.e. track details. This we can confirm by making a grid in magic with the proper details of the tracks from track.info file as shown below.  
+
+- The track.info file looks like below:
+![image](https://user-images.githubusercontent.com/125293220/225688309-45bb0799-b3ea-4300-8b46-71ddcc3b3726.png)
+
+- The format for it is as follows:
+> \<layer-name\> \<X/Y direction\> \<track-offset\> \<track-pitch\>
+
+- Following rules should be taken care of when creating a std cell:  
+1) The input/output pins should lie on the intersection of the horizontal and vertical track. (so that the route can reach them from the y as well as x direction)  
+2) Width of the std cell should be an odd multiple of the track pitch and height should be odd multiple of track's vertical pitch.
+
+- After this we set the direction (power, ground or signal) for all the pins usting the port command. 
+![image](https://user-images.githubusercontent.com/125293220/225693866-cab26dab-f9bd-4216-9fe8-a1d035f90418.png)
+
+- Once done, we can write out the lef file for this cell using the command:
+> lef write sky130_vsdinv.lef
+
+### Including this cell in our previous design
+Now we need to include this in our previously placed design. So we go back to the synthesis stage.
+
+- Before synthesis, we need to add the new lef file in the config.tcl by adding the below line:
+```
+set ::env(EXTRA_LEFS) [glob $::env(OPENLANE_ROOT)/designs/$::env(DESIGN_NAME)/src/*.lef]
+```
+- We also have to set the library paths to include standard cell information
+```
+set ::env(LIB_SYNTH) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130_fd_sc_hd__typical.lib"
+set ::env(LIB_FASTEST) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130_fd_sc_hd__fast.lib"
+set ::env(LIB_SLOWEST) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130_fd_sc_hd__slow.lib"
+set ::env(LIB_TYPICAL) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130_fd_sc_hd__typical.lib"
+```
+After modifying the config file run synthesis, and just before 'run_synthesis' step, we add the following commands in the console.
+```
+set lefs [glob $::env(DESIGN_DIR)/src/*.lef]
+add_lefs -src $lefs
+```
+- Now we run synthesis again:
+![image](https://user-images.githubusercontent.com/125293220/225696423-9995894e-eb76-429b-8fcd-46d424fb1295.png)
+
+We observe that the slack values are negative. Negative slack means that there are violations.
+
+### OpenSTA run to check violations
+
+OpenSTA can be invoked as a standalone application outside the openlane shell to get additional info on the violations and get an idea on how to fix them:  
+The setup for this is done using the following steps:  
+- Create the my_base.sdc file from refering to https://github.com/nickson-jose/vsdstdcelldesign/tree/master/extras
+- Match the clock period with the clock period set in openlane_dir/openlane/designs/picorv32a/src/sky130_fd_sc_hd__typical.lib (highest priority config).
+- Create pre_sta.conf file that contains paths to the verilog file, constraints, clcok period and other required parameters.
+![image](https://user-images.githubusercontent.com/125293220/225697721-39d03945-3683-42b4-9d5a-36e466b7661c.png)
+
+Now we can run OpenSTA using below command:
+> sta pre_sta.conf
+
+- This shows the detailed report along with the slack values:
+![image](https://user-images.githubusercontent.com/125293220/225698863-256b20b6-67b6-4fc8-b64f-c2de49c3a197.png)
+
+- We can try to reduce the slack values by changing the fanout and/or the synthesis startegy to be more concerned with DELAY instead of area. This can be done by playing with the two keywords:  
+a) SYNTH_STRATEGY, &
+b) SYNTH_MAX_FANOUT  
+
+- Trying with SYNTH_STRATEGY as "DELAY 3" and SYNTH_MAX_FANOUT as 4.
+  - Synthesis:
+![image](https://user-images.githubusercontent.com/125293220/225703422-d0ac5768-683f-4ff1-847c-2ea293380222.png)
+
+  - OpenSTA:
+![image](https://user-images.githubusercontent.com/125293220/225703484-5b208f77-7c73-44da-b36f-2e2db25b2343.png)
 
 
