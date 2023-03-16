@@ -106,9 +106,9 @@ b) Detailed placement: Places the cells properly in well defined rows and column
 ![image](https://user-images.githubusercontent.com/125293220/225674609-c07446d8-6a54-4c57-aa3c-09a8d0deb513.png)
 
 
-## Custom inverter design using Magic layout and ngspice characterization
+# Custom inverter design using Magic layout and ngspice characterization
 
-### CMOS inverter
+## CMOS inverter
 CMOS cells have five modes of operation:  
 
 - NMOS Cutoff PMOS Linear
@@ -118,7 +118,7 @@ CMOS cells have five modes of operation:
 - NMOS Linear PMOS Cutoff
 Thershold voltage is the voltage at which Vin = Vout. Threshold voltage is a function of the W/L ratio of a device, therefore varying the W/L ratio will vary the output waveform of CMOS devices and inturn the transfer charecteristic of the device as well. A perfectly symmetrical device will have a switching threshold such that Vin = Vout = VDD/2 which is achieved when (W/L)p is approximatly 2.5 times (W/L)n.  
 
-### Cell characterization flow:
+## Cell characterization flow:
 
 GUNA software is used for cell characterization. An example buffer cell is characterized in the following steps:
 - Device model (mos devices and their electrical values)
@@ -132,7 +132,7 @@ GUNA software is used for cell characterization. An example buffer cell is chara
 Finally, we feed all above steps from in GUNA software as config file.
 
 
-### LAB
+## LAB
 - Clone the repo: https://github.com/nickson-jose/vsdstdcelldesign.git, and use the mag file to see the layout of the inv cell.
 > magic -T sky130A.tech sky130_inv.mag
 - The layout looks like this:
@@ -165,9 +165,9 @@ c) By clicking on the point where we want to measure the values, we can print th
 
 
 
-## Pre-layout timing analysis and CTS
+# Pre-layout timing analysis and CTS
 
-### Magic to std cell lef generation:
+## Magic to std cell lef generation:
 PnR is possible just by giving information about the pin placement and metal information, there is no need of providing any information about the logic. This is done by the LEF file (Library Exchange Format) to perform interconnect routing in conjunction to routing guides generated from the PnR flow. This is how the companies do not disclose the logic information to the foundry.  
 
 Before generating the LEF file for our standard cell design we need to ensure that the design we have made is satisfing the foundry requirment i.e. track details. This we can confirm by making a grid in magic with the proper details of the tracks from track.info file as shown below.  
@@ -188,7 +188,7 @@ Before generating the LEF file for our standard cell design we need to ensure th
 - Once done, we can write out the lef file for this cell using the command:
 > lef write sky130_vsdinv.lef
 
-### Including this cell in our previous design
+## Including this cell in our previous design
 Now we need to include this in our previously placed design. So we go back to the synthesis stage.
 
 - Before synthesis, we need to add the new lef file in the config.tcl by adding the below line:
@@ -212,7 +212,7 @@ add_lefs -src $lefs
 
 We observe that the slack values are negative. Negative slack means that there are violations.
 
-### OpenSTA run to check violations
+## OpenSTA run to check violations
 
 OpenSTA can be invoked as a standalone application outside the openlane shell to get additional info on the violations and get an idea on how to fix them:  
 The setup for this is done using the following steps:  
@@ -242,7 +242,7 @@ We can see slack values are reduced.
 
 - We can also think of upsizing buffers/other std cells to increase their drive strength thereby reducing slew values. This can be done by refering to the slack report generated in openSTA. This would however, increase the design area so it is a trade-off.
 
-### Clock Tree Synthesis
+## Clock Tree Synthesis
 
 This step ensures that the clocks are routed to all sequential cells such that there is equal distribution of the delay i.e. the clock skew is minimal.
 
@@ -251,7 +251,7 @@ Process to run cts is simple. Just run below command in openlane shell:
 
 ![image](https://user-images.githubusercontent.com/125293220/225707471-4db3a41f-2bba-450e-ab7a-d0e1a16a7d3d.png)
 
-### Post CTS STA analysis
+## Post CTS STA analysis
 
 Following steps need to be run in openlane to check STA after CTS step. These involve invoking openROAD internally within the openLANE gui.
 > openroad  
@@ -274,9 +274,9 @@ Following steps need to be run in openlane to check STA after CTS step. These in
 
 As we can see, some more iterations of fixes (upsizing/fanout changes) can be done to make the slack positive and meet the requirements.
 
-## Routing using OpenROAD and TritonRoute
+# Routing using OpenROAD and TritonRoute
 
-### Power Delivery Network Generation
+## Power Delivery Network Generation
 
 Now that we are done with CTS, we start the routing stage by generating out power delivery network as per the pitch and width values from the track.info file.  
 To run it simply run below command in openlane shell:
@@ -288,7 +288,7 @@ This stage creates a new def with the power distribution network created:
 While we are viewing this layout, we can also note that our custom inv cell is also included in the design!
 ![image](https://user-images.githubusercontent.com/125293220/225710978-fbe5d488-1bb0-4079-adb4-576492969e10.png)
 
-### Routing
+## Routing
 
 - Routing step consists of two parts:
   - Global Routing: We find a guide for all routes. There are multiple possible conditions that make up these guides. These guides are created after splitting the entire region into small grid boxes.
